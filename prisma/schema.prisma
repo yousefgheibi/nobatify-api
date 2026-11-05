@@ -1,0 +1,106 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// A business (salon, barber shop, ...). Public page lives at /booking/{slug}.
+model Business {
+  id          String   @id @default(cuid())
+  slug        String   @unique @db.VarChar(64)
+  name        String   @db.VarChar(120)
+  category    String   @db.VarChar(60)
+  city        String   @db.VarChar(60)
+  address     String?  @db.VarChar(255)
+  phone       String   @db.VarChar(20)
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner    User?
+  services Service[]
+  hours    WorkingHour[]
+  bookings Booking[]
+}
+
+// Business owner (the only kind of account in the system).
+// Customers never get an account.
+model User {
+  id           String   @id @default(cuid())
+  phone        String   @unique @db.VarChar(20)
+  passwordHash String   @db.VarChar(100)
+  fullName     String   @db.VarChar(120)
+  businessId   String   @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  businessId  String
+  name        String   @db.VarChar(120)
+  priceToman  Int
+  durationMin Int
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  business Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+
+  @@index([businessId])
+}
+
+// One row per weekday per business. weekday: 0 = Saturday ... 6 = Friday (Iranian week).
+model WorkingHour {
+  id         String  @id @default(cuid())
+  businessId String
+  weekday    Int
+  isOpen     Boolean @default(false)
+  opensMin   Int     @default(540) // 09:00
+  closesMin  Int     @default(1200) // 20:00
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, weekday])
+}
+
+enum BookingStatus {
+  PENDING   // customer requested, waiting for the business
+  CONFIRMED // business approved
+  CANCELLED // cancelled by business (or customer later)
+}
+
+model Booking {
+  id            String        @id @default(cuid())
+  trackingCode  String        @unique @db.VarChar(12)
+  businessId    String
+  serviceId     String
+  customerName  String        @db.VarChar(120)
+  customerPhone String        @db.VarChar(20)
+  // Snapshot of the service at request time, so later price edits do not change history.
+  serviceName   String        @db.VarChar(120)
+  priceToman    Int
+  startsAt      DateTime
+  endsAt        DateTime
+  status        BookingStatus @default(PENDING)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  service  Service  @relation(fields: [serviceId], references: [id])
+
+  @@index([businessId, startsAt])
+}
