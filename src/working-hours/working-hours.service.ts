@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { WorkingHoursDto } from './dto/working-hours.dto.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { parseHHmm } from '../common/date-helper.js';
+import { formatHHmm, parseHHmm } from '../common/date-helper.js';
 
 @Injectable()
 export class WorkingHoursService {
@@ -44,34 +44,9 @@ export class WorkingHoursService {
     );
     return this.getWorkingHours(businessId);
   }
-
-  private validateWorkingHours(dto: WorkingHoursDto) {
-    if (new Set(dto.days.map((day) => day.weekday)).size !== 7) {
-      throw new BadRequestException('همه ۷ روز هفته باید ارسال شوند.');
-    }
-
-    return dto.days.map((day) => {
-      const opensMin = parseHHmm(day.opensAt);
-      const closesMin = parseHHmm(day.closesAt);
-
-      if (opensMin === null || closesMin === null) {
-        throw new BadRequestException('فرمت ساعت وارد شده نادرست است.');
-      }
-
-      if (day.isOpen && closesMin <= opensMin) {
-        throw new BadRequestException('ساعت پایان باید بعد از ساعت شروع باشد.');
-      }
-
-      return {
-        weekday: day.weekday,
-        isOpen: day.isOpen,
-        opensMin,
-        closesMin,
-      };
-    });
-  }
 }
 
+/** Stored minutes -> "HH:mm" strings, the same format PUT accepts. */
 export function toHourView(hour: {
   weekday: number;
   isOpen: boolean;
@@ -81,7 +56,7 @@ export function toHourView(hour: {
   return {
     weekday: hour.weekday,
     isOpen: hour.isOpen,
-    opensAt: hour.opensMin,
-    closesAt: hour.closesMin,
+    opensAt: formatHHmm(hour.opensMin),
+    closesAt: formatHHmm(hour.closesMin),
   };
 }

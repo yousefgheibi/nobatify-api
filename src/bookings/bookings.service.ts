@@ -1,7 +1,7 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AvailabilityQueryDto, BookingRequestDto, ListBookingsQueryDto } from './dto/bookings.dto.js';
-import { DAY_MS, formatHHmm, iranianWeekday, tehranDateOf, tehranDayStart } from '../common/date-helper.js';
+import { DAY_MS, formatHHmm, iranianWeekday, jalaliDateOf, jalaliDayStart } from '../common/date-helper.js';
 import { BookingStatus, Prisma } from '../../generated/prisma/client.js';
 import { normalizeIranMobile } from '../common/phone.js';
 import { randomInt } from 'crypto';
@@ -28,7 +28,7 @@ export class BookingsService {
 
     if (q.status) where.status = q.status as BookingStatus;
     if (q.date) {
-      const dayStart = tehranDayStart(q.date);
+      const dayStart = jalaliDayStart(q.date);
       if (!dayStart) throw new BadRequestException('تاریخ نامعتبر است');
       where.startsAt = { gte: dayStart, lt: new Date(dayStart.getTime() + DAY_MS) };
     }
@@ -37,7 +37,17 @@ export class BookingsService {
       where,
       orderBy: { startsAt: 'asc' },
     });
-    return rows.map((b) => toView(b, ''));
+    return rows.map((b) => ({
+      id: b.id,
+      trackingCode: b.trackingCode,
+      status: b.status,
+      customerName: b.customerName,
+      customerPhone: b.customerPhone,
+      serviceName: b.serviceName,
+      priceToman: b.priceToman,
+      startsAt: b.startsAt.toISOString(),
+      endsAt: b.endsAt.toISOString(),
+    }));
   }
 
   confirm(businessId: string, id: string) {
@@ -66,7 +76,7 @@ export class BookingsService {
     return { id, status: to };
   }
 
-  async getDetails(bookingId: string, businessId: string) {
+  async getDetails(businessId: string, bookingId: string) {
     const booking = await this.prisma.booking.findFirst({
       where: {
         id: bookingId,
@@ -86,7 +96,7 @@ export class BookingsService {
 
   // public 
   async availability(slug: string, q: AvailabilityQueryDto) {
-    const dayStart = tehranDayStart(q.date);
+    const dayStart = jalaliDayStart(q.date);
     if (!dayStart) throw new BadRequestException('تاریخ نامعتبر است');
 
     const business = await this.findBusiness(slug);
@@ -113,8 +123,8 @@ export class BookingsService {
 
     const business = await this.findBusiness(slug);
     const service = await this.findService(business.id, dto.serviceId);
-    const dateOnly = tehranDateOf(startsAt);
-    const dayStart = tehranDayStart(dateOnly)!;
+    const dateOnly = jalaliDateOf(startsAt);
+    const dayStart = jalaliDayStart(dateOnly)!;
     const day = business.hours.find((h) => h.weekday === iranianWeekday(dateOnly));
     const endsAt = new Date(startsAt.getTime() + service.durationMin * 60_000);
 

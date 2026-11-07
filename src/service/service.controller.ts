@@ -12,7 +12,7 @@ export class ServiceController {
     constructor(private readonly service: ServiceService){}
 
   @Get()
-  listServices(@CurrentOwner() owner: Owner, @Body() dto: CreateServiceDto) {
+  listServices(@CurrentOwner() owner: Owner) {
     return this.service.listServices(owner.businessId);
   }
 

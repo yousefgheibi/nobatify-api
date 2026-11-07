@@ -15,7 +15,7 @@ export class BookingsController {
   @UseGuards(OwnerGuard)
   @ApiBearerAuth()
   list(@CurrentOwner() owner: Owner, @Query() query: ListBookingsQueryDto) {
-    return this.bookings.listForOwner(owner.userId, query);
+    return this.bookings.listForOwner(owner.businessId, query);
   }
 
   @Get('bookings/:id')

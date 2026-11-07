@@ -1,4 +1,4 @@
-import { tehranDayStart } from "./date-helper.js";
+import { jalaliDayStart } from "./date-helper.js";
 
 export interface Hours {
   isOpen: boolean;
@@ -18,7 +18,7 @@ export function freeSlots(opts: {
   now: Date;
 }): Date[] {
   const { hours, durationMin, busy, now } = opts;
-  const dayStart = tehranDayStart(opts.dateOnly);
+  const dayStart = jalaliDayStart(opts.dateOnly);
   if (!dayStart || !hours || !hours.isOpen || durationMin <= 0) return [];
 
   const slots: Date[] = [];
