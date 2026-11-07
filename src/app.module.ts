@@ -5,6 +5,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { BusinessModule } from './business/business.module.js';
 import { ServiceModule } from './service/service.module.js';
+import { WorkingHoursModule } from './working-hours/working-hours.module.js';
 
 
 @Module({
@@ -13,6 +14,7 @@ import { ServiceModule } from './service/service.module.js';
     AuthModule,
     BusinessModule,
     ServiceModule,
+    WorkingHoursModule,
   ],
   controllers: [AppController],
   providers: [AppService],
