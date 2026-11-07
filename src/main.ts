@@ -3,22 +3,51 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  
+  // Security headers
+  app.use(helmet());
 
-  const config = new DocumentBuilder()
-    .setTitle('nobatify api')
-    .setVersion('1.0')
-    .build();
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, documentFactory);
-
+  // API prefix
   app.setGlobalPrefix('api/v1');
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+
+  // Request validation
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      forbidUnknownValues: true,
+      transform: true,
+    }),
+  );
+
+  // CORS
+  const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:4200')
+    .split(',')
+    .map((origin) => origin.trim());
+
   app.enableCors({
-    origin: process.env.PUBLIC_WEB_URL ?? 'http://localhost:4200',
+    origin: allowedOrigins,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: false,
   });
+
+  // Swagger
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('Nobatify API')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
+
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('docs', app, document);
+  }
+
   await app.listen(process.env.PORT ?? 3000);
 }
 void bootstrap();

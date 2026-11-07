@@ -5,6 +5,7 @@ import { Owner, OwnerGuard } from '../auth/auth.guard.js';
 import { ListBookingsQueryDto } from './dto/bookings.dto.js';
 import { AvailabilityQueryDto, BookingRequestDto } from './dto/bookings.dto.js';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller()
 export class BookingsController {
@@ -39,16 +40,19 @@ export class BookingsController {
   }
 
   @Get('public/businesses/:slug/availability')
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   availability(@Param('slug') slug: string, @Query() query: AvailabilityQueryDto) {
     return this.bookings.availability(slug, query);
   }
 
   @Post('public/businesses/:slug/bookings')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   request(@Param('slug') slug: string, @Body() dto: BookingRequestDto) {
     return this.bookings.createRequest(slug, dto);
   }
 
   @Get('public/bookings/:trackingCode')
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   track(@Param('trackingCode') trackingCode: string) {
     return this.bookings.track(trackingCode);
   }
