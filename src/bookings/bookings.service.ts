@@ -66,6 +66,23 @@ export class BookingsService {
     return { id, status: to };
   }
 
+  async getDetails(bookingId: string, businessId: string) {
+    const booking = await this.prisma.booking.findFirst({
+      where: {
+        id: bookingId,
+        businessId,
+      },
+      include: {
+        service: true,
+      },
+    });
+
+    if (!booking) {
+      throw new NotFoundException('رزرو موردنظر پیدا نشد');
+    }
+
+    return booking;
+  }
 
   // public 
   async availability(slug: string, q: AvailabilityQueryDto) {

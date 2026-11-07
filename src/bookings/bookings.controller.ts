@@ -4,25 +4,36 @@ import { CurrentOwner } from '../common/current-user.decorator.js';
 import { Owner, OwnerGuard } from '../auth/auth.guard.js';
 import { ListBookingsQueryDto } from './dto/bookings.dto.js';
 import { AvailabilityQueryDto, BookingRequestDto } from './dto/bookings.dto.js';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller()
 export class BookingsController {
   constructor(private readonly bookings: BookingsService) {}
 
-  @Get('me/bookings')
+  @Get('bookings')
   @UseGuards(OwnerGuard)
+  @ApiBearerAuth()
   list(@CurrentOwner() owner: Owner, @Query() query: ListBookingsQueryDto) {
     return this.bookings.listForOwner(owner.userId, query);
   }
 
-  @Post('me/bookings/:id/confirm')
+  @Get('bookings/:id')
   @UseGuards(OwnerGuard)
+  @ApiBearerAuth()
+  getBookingDetails(@CurrentOwner() owner: Owner, @Param('id') id: string) {
+    return this.bookings.getDetails(owner.businessId, id);
+  }
+
+  @Post('bookings/:id/confirm')
+  @UseGuards(OwnerGuard)
+  @ApiBearerAuth()
   confirm(@CurrentOwner() owner: Owner, @Param('id') id: string) {
     return this.bookings.confirm(owner.businessId, id);
   }
 
-  @Post('me/bookings/:id/cancel')
+  @Post('bookings/:id/cancel')
   @UseGuards(OwnerGuard)
+  @ApiBearerAuth()
   cancel(@CurrentOwner() owner: Owner, @Param('id') id: string) {
     return this.bookings.cancel(owner.businessId, id);
   }
