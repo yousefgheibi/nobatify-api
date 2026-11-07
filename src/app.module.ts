@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module.js';
 import { BusinessModule } from './business/business.module.js';
 import { ServiceModule } from './service/service.module.js';
 import { WorkingHoursModule } from './working-hours/working-hours.module.js';
+import { BookingsModule } from './bookings/bookings.module.js';
 
 
 @Module({
@@ -15,6 +16,7 @@ import { WorkingHoursModule } from './working-hours/working-hours.module.js';
     BusinessModule,
     ServiceModule,
     WorkingHoursModule,
+    BookingsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
