@@ -7,9 +7,15 @@ import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
+  const isProd = process.env.NODE_ENV === 'production';
+
   // Security headers
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: isProd ? undefined : false,
+      crossOriginOpenerPolicy: isProd ? undefined : false,
+    }),
+  );
 
   // API prefix
   app.setGlobalPrefix('api/v1');
@@ -48,6 +54,6 @@ async function bootstrap() {
     SwaggerModule.setup('docs', app, document);
   }
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(Number(process.env.PORT ?? 3000), '0.0.0.0');
 }
 void bootstrap();
