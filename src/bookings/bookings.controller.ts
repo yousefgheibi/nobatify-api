@@ -10,7 +10,7 @@ import {
   BookingStatusChangeDto,
   BookingViewDto,
 } from './dto/bookings-response.dto.js';
-import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('bookings')
@@ -37,7 +37,7 @@ export class BookingsController {
   @Post('bookings/:id/confirm')
   @UseGuards(OwnerGuard)
   @ApiBearerAuth()
-  @ApiOkResponse({ type: BookingStatusChangeDto })
+  @ApiCreatedResponse({ type: BookingStatusChangeDto })
   confirm(@CurrentOwner() owner: Owner, @Param('id') id: string): Promise<BookingStatusChangeDto> {
     return this.bookings.confirm(owner.businessId, id) as any;
   }
@@ -45,7 +45,7 @@ export class BookingsController {
   @Post('bookings/:id/cancel')
   @UseGuards(OwnerGuard)
   @ApiBearerAuth()
-  @ApiOkResponse({ type: BookingStatusChangeDto })
+  @ApiCreatedResponse({ type: BookingStatusChangeDto })
   cancel(@CurrentOwner() owner: Owner, @Param('id') id: string): Promise<BookingStatusChangeDto> {
     return this.bookings.cancel(owner.businessId, id) as any;
   }
@@ -59,7 +59,7 @@ export class BookingsController {
 
   @Post('public/businesses/:slug/bookings')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
-  @ApiOkResponse({ type: BookingViewDto })
+  @ApiCreatedResponse({ type: BookingViewDto })
   request(@Param('slug') slug: string, @Body() dto: BookingRequestDto): Promise<BookingViewDto> {
     return this.bookings.createRequest(slug, dto) as any;
   }

@@ -2,12 +2,13 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { WorkingHoursDto } from './dto/working-hours.dto.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { formatHHmm, parseHHmm } from '../common/date-helper.js';
+import { WorkingHourItemDto } from './dto/working-hours-response.dto.js';
 
 @Injectable()
 export class WorkingHoursService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getWorkingHours(businessId: string) {
+  async getWorkingHours(businessId: string): Promise<WorkingHourItemDto[]>{
     const rows = await this.prisma.workingHour.findMany({
       where: { businessId },
       orderBy: { weekday: 'asc' },
@@ -15,7 +16,7 @@ export class WorkingHoursService {
     return rows.map(toHourView);
   }
 
-  async setWorkingHours(businessId: string, dto: WorkingHoursDto) {
+  async setWorkingHours(businessId: string, dto: WorkingHoursDto): Promise<WorkingHourItemDto[]> {
     if (new Set(dto.days.map((d) => d.weekday)).size !== 7) {
       throw new BadRequestException('همه‌ی ۷ روز هفته باید ارسال شوند');
     }

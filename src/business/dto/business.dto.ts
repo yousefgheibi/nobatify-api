@@ -1,40 +1,47 @@
-import { Type } from 'class-transformer';
-import { ArrayMaxSize, ArrayMinSize, IsBoolean, IsInt, IsOptional, IsString, Length, Matches, Max, Min, ValidateNested } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsString, Length, Matches } from 'class-validator';
 
 const SLUG = /^[a-z0-9](?:[a-z0-9-]{1,62}[a-z0-9])$/;
 
 export class UpdateBusinessDto {
-  @IsOptional() 
-  @IsString() 
-  @Length(2, 120) 
+  @ApiPropertyOptional({ description: 'نام کسب‌وکار', minLength: 2, maxLength: 120 })
+  @IsOptional()
+  @IsString()
+  @Length(2, 120)
   name?: string;
-  
-  @IsOptional() 
-  @IsString() 
-  @Length(2, 60) 
+
+  @ApiPropertyOptional({ description: 'دسته‌بندی کسب‌وکار', minLength: 2, maxLength: 60 })
+  @IsOptional()
+  @IsString()
+  @Length(2, 60)
   category?: string;
-  
-  @IsOptional() 
-  @IsString() 
-  @Length(2, 60) 
+
+  @ApiPropertyOptional({ description: 'شهر', minLength: 2, maxLength: 60 })
+  @IsOptional()
+  @IsString()
+  @Length(2, 60)
   city?: string;
-  
-  @IsOptional() 
-  @IsString() 
-  @Length(0, 255) 
+
+  @ApiPropertyOptional({ description: 'آدرس', minLength: 0, maxLength: 255 })
+  @IsOptional()
+  @IsString()
+  @Length(0, 255)
   address?: string;
-  
-  @IsOptional() 
-  @IsString() 
-  @Length(7, 20) 
+
+  @ApiPropertyOptional({ description: 'شماره موبایل', minLength: 7, maxLength: 20 })
+  @IsOptional()
+  @IsString()
+  @Length(7, 20)
   phone?: string;
-  
-  @IsOptional() 
-  @IsString() 
-  @Length(0, 2000) 
+
+  @ApiPropertyOptional({ description: 'توضیحات', minLength: 0, maxLength: 2000 })
+  @IsOptional()
+  @IsString()
+  @Length(0, 2000)
   description?: string;
-  
-  @IsOptional() 
-  @Matches(SLUG) 
+
+  @ApiPropertyOptional({ description: 'آدرس صفحه‌ی رزرو', pattern: SLUG.source })
+  @IsOptional()
+  @Matches(SLUG)
   slug?: string;
 }
